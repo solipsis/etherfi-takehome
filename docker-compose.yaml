@@ -1,20 +1,54 @@
-version: '1'
+version: '3'
 services:
   geth:
-    image: ethereum/client-go:v1.11.5 #latest
+    image: ethereum/client-go:latest
+      #network_mode: "host"
     restart: always
-    command: --goerli --http --http.api eth,net,engine,admin
+      # --authrpc.addr=geth
+    command: >
+      --ws
+      --authrpc.port 8551
+      --authrpc.addr=geth
+      --authrpc.jwtsecret=/root/jwt/jwt.hex
+      --authrpc.vhosts '*'
+      --goerli 
+      --http 
+      --http.api eth,net,engine,admin
     ports: 
       - '8545:8545'
       - '8546:8546'
+      - '8550:8550'
+      - '8551:8551'
     volumes:
       - ./data/geth:/root/.ethereum
+      - ./data/jwt.hex:/root/jwt/jwt.hex
   prysma:
-    image: gcr.io/prysmaticlabs/prysm/beacon-chain:v3.1.2 #latest
+    image: gcr.io/prysmaticlabs/prysm/beacon-chain:latest
+      #network_mode: "host"
+      #--genesis-state /genesis/genesis.ssz 
+      #--genesis-beacon-api-url=https://goerli.beaconstate.ethstaker.cc/
+      #--checkpoint-sync-url=https://goerli.beaconstate.ethstaker.cc/
     restart: always
     depends_on:
        - geth
-    command: --prater --accept-terms-of-use
+    command: >
+      --jwt-secret=/root/jwt/jwt.hex
+      --execution-endpoint=http://geth:8551
+      --prater
+      --accept-terms-of-use
+      --rpc-host=0.0.0.0
+      --grpc-gateway-host=0.0.0.0
+      --genesis-state=/genesis/genesis.ssz
+      --checkpoint-block=/genesis/block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz
+      --checkpoint-state=/genesis/state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz
+    ports:
+      - '4000:4000'
+      - '13000:13000'
+      - '12000:12000/udp'
     volumes:
       - ./data/prysma:/root/.eth2
+      - ./data/jwt.hex:/root/jwt/jwt.hex
+      - ./genesis.ssz:/genesis/genesis.ssz
+      - ./block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz:/genesis/block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz
+      - ./state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz:/genesis/state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz
 
