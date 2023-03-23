@@ -1,0 +1,20 @@
+version: '1'
+services:
+  geth:
+    image: ethereum/client-go:v1.11.5 #latest
+    restart: always
+    command: --goerli --http --http.api eth,net,engine,admin
+    ports: 
+      - '8545:8545'
+      - '8546:8546'
+    volumes:
+      - ./data/geth:/root/.ethereum
+  prysma:
+    image: gcr.io/prysmaticlabs/prysm/beacon-chain:v3.1.2 #latest
+    restart: always
+    depends_on:
+       - geth
+    command: --prater --accept-terms-of-use
+    volumes:
+      - ./data/prysma:/root/.eth2
+
