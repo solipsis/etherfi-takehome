@@ -29,6 +29,7 @@ Runs a Goerli Testnet beacon and execution node alongside a prometheus stats ser
 
     * connect to the prometheus ui instance at localhost:9090
     * inspect `takehome_prysm_synced` exported metric
+    * inspect `takehome_prysm_distance` exported metric
     * inspect `takehome_geth_synced` exported metric
 
     With the provided checkpoints prysm beacon-chain should be synced within 10-15 minutes.
