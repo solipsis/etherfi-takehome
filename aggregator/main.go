@@ -48,14 +48,10 @@ takehome_prysm_synced %d`
 }
 
 func fetchGethStatus() (bool, error) {
-	type gethInnerResponse struct {
-		CurrentBlock string `json:"currentBlock,omitempty"`
-		HighestBlock string `json:"highestBlock,omitempty"`
+	// see if geth says it is syncing
+	type gethSyncingResponse struct {
+		Result bool `json:result"`
 	}
-	type gethResponse struct {
-		Result gethInnerResponse `json:result"`
-	}
-
 	buf := bytes.NewBuffer([]byte(`{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}`))
 	resp, err := http.Post("http://geth:8545", "application/json", buf)
 	if err != nil {
@@ -65,21 +61,38 @@ func fetchGethStatus() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
-	var out gethResponse
-	if err := json.Unmarshal(body, &out); err != nil {
+	var syncResponse gethSyncingResponse
+	if err := json.Unmarshal(body, &syncResponse); err != nil {
 		return false, nil
 	}
 
-	highestBlock, err := strconv.ParseInt(out.Result.HighestBlock, 0, 64)
+	if syncResponse.Result { // if result is true, we are not synced
+		return false, nil
+	}
+
+	// see if geth reports a non-zero block for its head if it is not syncing
+	type gethBlockResponse struct {
+		Result string `json:result"`
+	}
+	buf = bytes.NewBuffer([]byte(`{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}`))
+	resp, err = http.Post("http://geth:8545", "application/json", buf)
+	if err != nil {
+		return false, err
+	}
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+	var blockResponse gethBlockResponse
+	if err := json.Unmarshal(body, &blockResponse); err != nil {
+		return false, nil
+	}
+	blockNumber, err := strconv.ParseInt(blockResponse.Result, 0, 64)
 	if err != nil {
 		return false, err
 	}
 
-	if highestBlock > 0 && out.Result.CurrentBlock == out.Result.HighestBlock {
-		return true, nil
-	}
-	return false, nil
+	return blockNumber > 0, nil
 }
 
 func fetchPrysmStatus() (bool, error) {
