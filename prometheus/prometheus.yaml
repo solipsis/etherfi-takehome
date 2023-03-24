@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+  scrape_timeout:  4s
+
+scrape_configs:
+  - job_name: geth
+    metrics_path: /debug/metrics/prometheus
+    scheme: http
+    static_configs:
+      - targets:
+          - 'geth:6060'
+  - job_name: prysma
+    static_configs:
+      - targets:
+        - 'prysma:8080'
+  - job_name: aggregator
+    static_configs:
+      - targets:
+        - 'aggregator:8085'
