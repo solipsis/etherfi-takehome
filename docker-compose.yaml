@@ -1,5 +1,12 @@
 version: '3'
 services:
+ # tcpdump:
+    #image: nicolaka/netshoot
+    #depends_on:
+      #- geth
+    #command: tcpdump -i eth0 
+    #network_mode: service:geth
+
   geth:
     image: ethereum/client-go:latest
       #network_mode: "host"
@@ -12,13 +19,19 @@ services:
       --authrpc.jwtsecret=/root/jwt/jwt.hex
       --authrpc.vhosts '*'
       --goerli 
-      --http 
-      --http.api eth,net,engine,admin
+      --http
+      --http.port 8545
+      --http.addr=geth
+      --http.api eth,net,engine,admin,web3,debug
+      --http.vhosts=*
+      --metrics
+      --metrics.addr=0.0.0.0
     ports: 
       - '8545:8545'
       - '8546:8546'
       - '8550:8550'
       - '8551:8551'
+      - '6060:6060'
     volumes:
       - ./data/geth:/root/.ethereum
       - ./data/jwt.hex:/root/jwt/jwt.hex
@@ -41,9 +54,12 @@ services:
       --genesis-state=/genesis/genesis.ssz
       --checkpoint-block=/genesis/block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz
       --checkpoint-state=/genesis/state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz
+      --monitoring-host=prysma
     ports:
+      - '3500:3500'
       - '4000:4000'
       - '13000:13000'
+      - '8080:8080'
       - '12000:12000/udp'
     volumes:
       - ./data/prysma:/root/.eth2
@@ -51,4 +67,20 @@ services:
       - ./genesis.ssz:/genesis/genesis.ssz
       - ./block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz:/genesis/block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz
       - ./state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz:/genesis/state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    ports:
+      - '9090:9090'
+    command: --config.file=/etc/prometheus/prometheus.yaml
+    volumes:
+      - ./prometheus:/etc/prometheus
 
+  aggregator:
+    image: aggregator
+    build:
+      dockerfile: Dockerfile
+      context: ./aggregator
+    restart: always
+    ports:
+      - "8085:8085"
