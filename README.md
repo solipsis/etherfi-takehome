@@ -16,9 +16,9 @@ Runs a Goerli Testnet beacon and execution node alongside a prometheus stats ser
 
 ### Prereqs
 
-    * generate a new JWT and save it as jwt.hex
-    or use the provided insecure key
-    * mv bad-jwt.hex jwt.hex
+    // generate a new JWT and save it as "jwt.hex"
+    // or use the provided insecure key
+    $ mv bad-jwt.hex jwt.hex
 
 ### Running
 
