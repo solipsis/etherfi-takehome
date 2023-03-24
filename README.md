@@ -31,7 +31,7 @@ Runs a Goerli Testnet beacon and execution node alongside a prometheus stats ser
     * inspect `takehome_prysm_synced` exported metric
     * inspect `takehome_geth_synced` exported metric
 
-    With the provided checkpoints prysm beacon-chain should be synced within 10 minutes.
+    With the provided checkpoints prysm beacon-chain should be synced within 10-15 minutes.
     Geth execution-client takes significantly longer
 
 ### Acknowledgements
