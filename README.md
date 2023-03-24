@@ -35,4 +35,6 @@ Runs a Goerli Testnet beacon and execution node alongside a prometheus stats ser
     Geth execution-client takes significantly longer
 
 ### Acknowledgements
-Everything is more open (security-wise) than it should be to not spend too much time on this project
+
+    * Everything is more open (security-wise) than it should be to not spend too much time on this
+    * only supports testnet + most configuration is hardcoded
