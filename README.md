@@ -1,5 +1,7 @@
 ## Ether-fi takehome
 
+![sample](./takehome-screenshot.png)
+
 ### Overview
 Runs a Goerli Testnet beacon and execution node alongside a prometheus stats server that reports if the nodes are synced
 

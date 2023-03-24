@@ -1,23 +1,15 @@
 version: '3'
 services:
- # tcpdump:
-    #image: nicolaka/netshoot
-    #depends_on:
-      #- geth
-    #command: tcpdump -i eth0 
-    #network_mode: service:geth
 
   geth:
     image: ethereum/client-go:latest
-      #network_mode: "host"
     restart: always
-      # --authrpc.addr=geth
     command: >
       --ws
       --authrpc.port 8551
       --authrpc.addr=geth
       --authrpc.jwtsecret=/root/jwt/jwt.hex
-      --authrpc.vhosts '*'
+      --authrpc.vhosts='*'
       --goerli 
       --http
       --http.port 8545
@@ -34,13 +26,9 @@ services:
       - '6060:6060'
     volumes:
       - ./data/geth:/root/.ethereum
-      - ./data/jwt.hex:/root/jwt/jwt.hex
+      - ./jwt.hex:/root/jwt/jwt.hex
   prysma:
     image: gcr.io/prysmaticlabs/prysm/beacon-chain:latest
-      #network_mode: "host"
-      #--genesis-state /genesis/genesis.ssz 
-      #--genesis-beacon-api-url=https://goerli.beaconstate.ethstaker.cc/
-      #--checkpoint-sync-url=https://goerli.beaconstate.ethstaker.cc/
     restart: always
     depends_on:
        - geth
@@ -55,6 +43,7 @@ services:
       --checkpoint-block=/genesis/block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz
       --checkpoint-state=/genesis/state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz
       --monitoring-host=prysma
+      --suggested-fee-recipient=0x01234567722E6b0000012BFEBf6177F1D2e9758D9
     ports:
       - '3500:3500'
       - '4000:4000'
@@ -63,10 +52,8 @@ services:
       - '12000:12000/udp'
     volumes:
       - ./data/prysma:/root/.eth2
-      - ./data/jwt.hex:/root/jwt/jwt.hex
-      - ./genesis.ssz:/genesis/genesis.ssz
-      - ./block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz:/genesis/block_prater_capella_5257984-0xeb158779e14dd958a381fa6a798b0883b6936163a788103387bec8c20edb9506.ssz
-      - ./state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz:/genesis/state_prater_capella_5257984-0x89a05deee425199ad1b8e6a98aa291ff1080e319abe83eec9e7b57fa73846e78.ssz
+      - ./jwt.hex:/root/jwt/jwt.hex
+      - ./init:/genesis
   prometheus:
     image: prom/prometheus:latest
     restart: always
